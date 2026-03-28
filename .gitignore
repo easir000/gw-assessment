@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Assessment-specific (don't commit real seed_data if provided later)
+# seed_data.json  # Uncomment if  want to exclude the stub

@@ -1,0 +1,152 @@
+{
+  "passed": 16,
+  "failed": 0,
+  "total": 16,
+  "details": [
+    {
+      "id": 1,
+      "name": "Sales: Hot picks under budget",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "SALES_RECO",
+      "expected_intent": "SALES_RECO"
+    },
+    {
+      "id": 2,
+      "name": "Sales: Low budget filter",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "SALES_RECO",
+      "expected_intent": "SALES_RECO"
+    },
+    {
+      "id": 3,
+      "name": "Sales: Best sellers request",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "SALES_RECO",
+      "expected_intent": "SALES_RECO"
+    },
+    {
+      "id": 4,
+      "name": "Compliance: Why blocked in ID",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "COMPLIANCE_CHECK",
+      "expected_intent": "COMPLIANCE_CHECK"
+    },
+    {
+      "id": 5,
+      "name": "Compliance: Legal check in TX",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "COMPLIANCE_CHECK",
+      "expected_intent": "COMPLIANCE_CHECK"
+    },
+    {
+      "id": 6,
+      "name": "Compliance: Mushroom restricted in CA",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "COMPLIANCE_CHECK",
+      "expected_intent": "COMPLIANCE_CHECK"
+    },
+    {
+      "id": 7,
+      "name": "Vendor: Missing fields validation",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "VENDOR_ONBOARDING",
+      "expected_intent": "VENDOR_ONBOARDING"
+    },
+    {
+      "id": 8,
+      "name": "Vendor: Complete submission",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "VENDOR_ONBOARDING",
+      "expected_intent": "VENDOR_ONBOARDING"
+    },
+    {
+      "id": 9,
+      "name": "Ops: Stock check by SKU",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "OPS_STOCK",
+      "expected_intent": "OPS_STOCK"
+    },
+    {
+      "id": 10,
+      "name": "Ops: Warehouse availability",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "OPS_STOCK",
+      "expected_intent": "OPS_STOCK"
+    },
+    {
+      "id": 11,
+      "name": "KB: Return policy",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "GENERAL_KB",
+      "expected_intent": "GENERAL_KB"
+    },
+    {
+      "id": 12,
+      "name": "KB: Shipping info",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "GENERAL_KB",
+      "expected_intent": "GENERAL_KB"
+    },
+    {
+      "id": 13,
+      "name": "Security: Unauthorized vendor access",
+      "result": "PASSED",
+      "status_code": 403,
+      "expected_status": 403,
+      "intent": "N/A (403 Forbidden)",
+      "expected_intent": "VENDOR_ONBOARDING"
+    },
+    {
+      "id": 14,
+      "name": "Security: Full internal access",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "OPS_STOCK",
+      "expected_intent": "OPS_STOCK"
+    },
+    {
+      "id": 15,
+      "name": "Memory: First request",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "SALES_RECO",
+      "expected_intent": "SALES_RECO"
+    },
+    {
+      "id": 16,
+      "name": "Memory: Follow-up request",
+      "result": "PASSED",
+      "status_code": 200,
+      "expected_status": 200,
+      "intent": "GENERAL_KB",
+      "expected_intent": "GENERAL_KB"
+    }
+  ],
+  "timestamp": "2026-03-28 13:34:01"
+}
