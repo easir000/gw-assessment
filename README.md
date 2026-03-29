@@ -84,8 +84,6 @@ curl -s http://127.0.0.1:8000/openapi.json | head -20
 ## 🏗️ Architecture Overview
 
 ### System Design
-
-
 ┌─────────────────────────────────────────────────────────────────┐
 │                         User Query                               │
 └────────────────────────┬────────────────────────────────────────┘
@@ -852,3 +850,7 @@ All rights reserved.
 | Section 12 | Submission Requirements | ✅ Complete | README + one-command run |
 | Section 13 | Scoring Rubric | ✅ 100/100 | Estimated score |
 | Appendix B | Bonus Extensions (3/4) | ✅ Complete | Pydantic, caching, evaluator |
+
+
+
+
