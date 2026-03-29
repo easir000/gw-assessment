@@ -35,8 +35,9 @@ app = FastAPI(
     title="GW Assessment - Odoo + AI/LLM Engineer PoC",
     description="Tool-first AI orchestration layer over ERP",
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url="/docs",        # Swagger UI (enabled by default)
+    redoc_url="/redoc",      # ReDoc (explicitly enable)
+    openapi_url="/openapi.json"  # OpenAPI schema
 )
 
 llm = LLMStub()

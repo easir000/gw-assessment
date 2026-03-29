@@ -65,9 +65,21 @@ curl http://127.0.0.1:8000/health
 Once running, access interactive API docs:
 
 - **Swagger UI:** http://127.0.0.1:8000/docs
-- **ReDoc:** http://127.0.0.1:8000/redoc
 
----
+
+# 1. Check if server is running
+curl -s http://127.0.0.1:8000/health
+# Expected: {"status":"healthy","service":"gw-assessment-poc"}
+
+# 2. Check if Swagger UI works
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/docs
+# Expected: 200
+
+# 3. Check if OpenAPI spec is available
+curl -s http://127.0.0.1:8000/openapi.json | head -20
+# Expected: OpenAPI JSON schema
+
+
 
 ## 🏗️ Architecture Overview
 
