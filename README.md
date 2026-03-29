@@ -117,7 +117,6 @@ Structured results → LLM formats → Sanitized response
 
 ## 📁 Project Structure
 
-
 gw-assessment/
 ├── main.py                      # FastAPI entry point + orchestrator
 ├── config.py                    # Tool allowlists, compliance rules, constants
@@ -161,10 +160,7 @@ gw-assessment/
     ├── test_llm_stub.py         # 7 tests (LLM formatting)
     ├── comprehensive_demo.py    # 16 integration tests (all intents)
     ├── verify_compliance.py     # Compliance rules verification
-    └── test_results.json        # Machine-readable test results
-
-
----
+    └── test_results.json        # Machine-readable test results---
 
 ## 📍 Code Location Map
 
