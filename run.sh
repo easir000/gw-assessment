@@ -1,4 +1,3 @@
-#!/bin/bash
 
 # GW Assessment - One-Command Startup
 echo "🚀 Starting GW Assessment PoC..."
