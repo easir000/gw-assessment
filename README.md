@@ -38,9 +38,7 @@ python -m venv venv
 
 # 2. Activate virtual environment
 # Windows:
- 
-myenv\Scripts\activate
-
+venv\Scripts\activate
 # Linux/Mac:
 source venv/bin/activate
 
@@ -66,6 +64,8 @@ Once running, access interactive API docs:
 
 - **Swagger UI:** http://127.0.0.1:8000/docs
 
+Diagnostic commands:
+
 
 # 1. Check if server is running
 curl -s http://127.0.0.1:8000/health
@@ -80,6 +80,9 @@ curl -s http://127.0.0.1:8000/openapi.json | head -20
 # Expected: OpenAPI JSON schema
 
 
+---
+
+## 🏗️ Architecture Overview
 
 ### Key Design Principles
 
@@ -446,11 +449,13 @@ curl -X POST "http://127.0.0.1:8000/chat" \
 
 ### Walkthrough Demo Script (Copy-Paste Ready)
 
-Save this as `demo_commands.sh` for quick execution during walkthrough:
+#### Option A: Git  (Linux/Mac/Windows with Git )
+
+Save as `demo_commands.sh`:
 
 
-#!/bin/bash
-# GW Assessment - Live Demo Commands
+#!/bin/
+# GW Assessment - Live Demo Commands (Git )
 # Run after server is started: uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 
 BASE_URL="http://127.0.0.1:8000"
@@ -498,6 +503,93 @@ curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" -X POST "$BASE_URL/chat" \
 echo -e "\n✅ Demo complete! Check server logs for observability data."
 
 
+**Usage (Git ):**
+
+chmod +x demo_commands.sh
+./demo_commands.sh
+
+
+#### Option B: Windows PowerShell
+
+Save as `demo_commands.ps1`:
+
+
+# GW Assessment - Live Demo Commands (PowerShell)
+# Run after server is started: uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+
+$BASE_URL = "http://127.0.0.1:8000"
+$SESSION = "walkthrough-demo"
+
+Write-Host "🎬 Starting GW Assessment Live Demo" -ForegroundColor Cyan
+Write-Host "======================================" -ForegroundColor Cyan
+
+# 1. Sales Query
+Write-Host "`n1️⃣  Sales: Hot picks for CA under $5000" -ForegroundColor Yellow
+$response1 = Invoke-RestMethod -Uri "$BASE_URL/chat" `
+    -Method Post `
+    -ContentType "application/json" `
+    -Body (@{query="Give me hot picks for CA under $5000"; user_type="internal_sales"; session_id=$SESSION} | ConvertTo-Json)
+Write-Host "Intent: $($response1.intent)" -ForegroundColor Green
+Write-Host "Response: $($response1.response)" -ForegroundColor White
+
+# 2. Compliance Query
+Write-Host "`n2️⃣  Compliance: Why SKU-1003 blocked in ID" -ForegroundColor Yellow
+$response2 = Invoke-RestMethod -Uri "$BASE_URL/chat" `
+    -Method Post `
+    -ContentType "application/json" `
+    -Body (@{query="Why is SKU-1003 not available in ID? Suggest alternatives."; user_type="portal_customer"; session_id=$SESSION} | ConvertTo-Json)
+Write-Host "Intent: $($response2.intent)" -ForegroundColor Green
+Write-Host "Response: $($response2.response)" -ForegroundColor White
+
+# 3. Ops Query
+Write-Host "`n3️⃣  Ops: Stock for SKU-1001" -ForegroundColor Yellow
+$response3 = Invoke-RestMethod -Uri "$BASE_URL/chat" `
+    -Method Post `
+    -ContentType "application/json" `
+    -Body (@{query="How much stock does SKU-1001 have and where?"; user_type="internal_sales"; session_id=$SESSION} | ConvertTo-Json)
+Write-Host "Intent: $($response3.intent)" -ForegroundColor Green
+Write-Host "Response: $($response3.response)" -ForegroundColor White
+
+# 4. Vendor Query
+Write-Host "`n4️⃣  Vendor: Missing fields validation" -ForegroundColor Yellow
+$response4 = Invoke-RestMethod -Uri "$BASE_URL/chat" `
+    -Method Post `
+    -ContentType "application/json" `
+    -Body (@{query="I'm uploading a product missing Net Wt and no lab report—what do I fix?"; user_type="portal_vendor"; session_id=$SESSION} | ConvertTo-Json)
+Write-Host "Intent: $($response4.intent)" -ForegroundColor Green
+Write-Host "Response: $($response4.response)" -ForegroundColor White
+
+# 5. Memory Follow-Up
+Write-Host "`n5️⃣  Memory: Follow-up with prior context" -ForegroundColor Yellow
+$response5 = Invoke-RestMethod -Uri "$BASE_URL/chat" `
+    -Method Post `
+    -ContentType "application/json" `
+    -Body (@{query="Ok add 2 of the first one to the basket"; user_type="internal_sales"; session_id=$SESSION} | ConvertTo-Json)
+Write-Host "Intent: $($response5.intent)" -ForegroundColor Green
+Write-Host "Response: $($response5.response)" -ForegroundColor White
+
+# Security Test (should return 403)
+Write-Host "`n🔐 Security Test: Unauthorized vendor access (portal_customer)" -ForegroundColor Yellow
+try {
+    $securityResponse = Invoke-RestMethod -Uri "$BASE_URL/chat" `
+        -Method Post `
+        -ContentType "application/json" `
+        -Body (@{query="I need to upload a vendor product"; user_type="portal_customer"} | ConvertTo-Json)
+    Write-Host "Unexpected: Got 200 instead of 403" -ForegroundColor Red
+} catch {
+    Write-Host "HTTP Status: 403 (Expected - Unauthorized)" -ForegroundColor Green
+}
+
+Write-Host "`n✅ Demo complete! Check server logs for observability data." -ForegroundColor Cyan
+
+
+**Usage (PowerShell):**
+
+# First, allow script execution (one-time):
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Then run:
+.\demo_commands.ps1
 
 
 ---
@@ -740,6 +832,14 @@ $env:PYTHONPATH = "."
 pytest tests/ -v
 
 
+#### Issue: PowerShell script execution blocked
+
+**Solution:**
+
+# Run PowerShell as Administrator, then:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+
 ---
 
 ## 📊 Performance Metrics
@@ -779,7 +879,3 @@ All rights reserved.
 | Section 12 | Submission Requirements | ✅ Complete | README + one-command run |
 | Section 13 | Scoring Rubric | ✅ 100/100 | Estimated score |
 | Appendix B | Bonus Extensions (3/4) | ✅ Complete | Pydantic, caching, evaluator |
-
-
-
-
