@@ -24,39 +24,65 @@
 
 ## 🚀 Quick Start
 
-### One-Command Startup
+### One-Command Startup (All Platforms)
 
+```bash
+# 1. Make script executable (first time only)
+chmod +x run.sh
 
+# 2. Start the server
 ./run.sh
+```
 
+### Available Modes
 
-Or manually:
+| Command | Description |
+|---------|-------------|
+| `./run.sh` | Start server in development mode (default) |
+| `./run.sh --test` | Run all 31 tests, then start server |
+| `./run.sh --demo` | Start server + auto-run 5 demo queries |
+| `./run.sh --port 8001` | Start on custom port (if 8000 busy) |
+| `./run.sh --help` | Show all options |
 
+### What Happens When You Run `./run.sh`
 
+1. ✅ Checks Python 3.10+ is installed
+2. ✅ Creates virtual environment (`myenv/`) if missing
+3. ✅ Activates virtual environment (Windows/Linux/Mac compatible)
+4. ✅ Installs dependencies from `requirements.txt`
+5. ✅ Starts FastAPI server with auto-reload
+6. ✅ Shows URLs for API docs and health check
+
+### Manual Setup (If run.sh Fails)
+
+```bash
 # 1. Create virtual environment
-python -m venv venv
+python -m venv myenv
 
 # 2. Activate virtual environment
-# Windows:
-venv\Scripts\activate
+# Windows (Git Bash):
+source myenv/Scripts/activate
+# Windows (PowerShell):
+.\myenv\Scripts\Activate.ps1
 # Linux/Mac:
-source venv/bin/activate
+source myenv/bin/activate
 
-# 3. Install dependencies
-pip install -r requirements.txt
+# 3. Install dependencies (use python -m pip for Windows compatibility)
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 
 # 4. Start server
-uvicorn main:app --host 127.0.0.1 --port 8000 --reload
-
+python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+```
 
 ### Verify Installation
 
-
+```bash
 # Health check
 curl http://127.0.0.1:8000/health
 
 # Expected: {"status":"healthy","service":"gw-assessment-poc"}
-
+```
 
 ### API Documentation
 
@@ -66,7 +92,7 @@ Once running, access interactive API docs:
 
 Diagnostic commands:
 
-
+```bash
 # 1. Check if server is running
 curl -s http://127.0.0.1:8000/health
 # Expected: {"status":"healthy","service":"gw-assessment-poc"}
@@ -78,7 +104,7 @@ curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/docs
 # 3. Check if OpenAPI spec is available
 curl -s http://127.0.0.1:8000/openapi.json | head -20
 # Expected: OpenAPI JSON schema
-
+```
 
 ---
 
@@ -97,7 +123,7 @@ curl -s http://127.0.0.1:8000/openapi.json | head -20
 
 ### Data Flow
 
-
+```
 seed_data.json (Official GW Data)
     │
     ├── 60 Products (THC, Nicotine, CBD, Kratom, Mushroom, Accessories)
@@ -111,18 +137,28 @@ Tools read directly (NO database, NO external API)
     │
     ▼
 Structured results → LLM formats → Sanitized response
+```
 
+### Component Flow
+
+1. **User Query** → FastAPI endpoint (`main.py`)
+2. **Intent Router** (`core/router.py`) → Keyword classification ($0 cost)
+3. **Orchestrator** (`main.py`) → Permission check + chain selection
+4. **Tools** (`core/tools/`) → Deterministic logic over seed_data.json
+5. **LLM Formatter** (`utils/llm_stub.py`) → Natural language explanation only
+6. **Response** → Structured JSON + observability logs
 
 ---
 
 ## 📁 Project Structure
 
+```
 gw-assessment/
 ├── main.py                      # FastAPI entry point + orchestrator
 ├── config.py                    # Tool allowlists, compliance rules, constants
 ├── seed_data.json               # Official GW dataset (60 products)
 ├── requirements.txt             # Python dependencies
-├── run.sh                       # One-command startup script
+├── run.sh                       # One-command startup script (Windows/Linux/Mac)
 ├── pytest.ini                   # Pytest configuration
 ├── README.md                    # This documentation
 │
@@ -160,7 +196,10 @@ gw-assessment/
     ├── test_llm_stub.py         # 7 tests (LLM formatting)
     ├── comprehensive_demo.py    # 16 integration tests (all intents)
     ├── verify_compliance.py     # Compliance rules verification
-    └── test_results.json        # Machine-readable test results---
+    └── test_results.json        # Machine-readable test results
+```
+
+---
 
 ## 📍 Code Location Map
 
@@ -197,16 +236,16 @@ These are the **exact 5 queries** that will be run during the live walkthrough. 
 #### 1️⃣ Sales: Hot Picks Under Budget
 
 **Query:**
-
+```
 "Give me hot picks for CA under $5000"
-
+```
 
 **Expected Intent:** `SALES_RECO`  
 **Expected Flow:** `hot_picks` → `compliance_filter` → formatted response  
 **Key Behavior:** Products blocked in CA are filtered out BEFORE recommendation
 
 **Curl Command:**
-
+```bash
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d '{
@@ -214,10 +253,10 @@ curl -X POST "http://127.0.0.1:8000/chat" \
        "user_type": "internal_sales",
        "session_id": "walkthrough-demo"
      }'
-
+```
 
 **Expected Response Snippet:**
-json
+```json
 {
   "intent": "SALES_RECO",
   "response": "Based on your budget, I recommend: [product names]. All items passed compliance checks.",
@@ -226,30 +265,30 @@ json
     "blocked_picks": [...]
   }
 }
-
+```
 
 **Server Log to Watch:**
-json
+```json
 {"event":"tool_call","tool":"hot_picks","latency_ms":12}
 {"event":"tool_call","tool":"compliance_filter","latency_ms":8}
 {"event":"request_complete","intent":"SALES_RECO","total_latency_ms":45}
-
+```
 
 ---
 
 #### 2️⃣ Compliance: Why Blocked + Alternatives
 
 **Query:**
-
+```
 "Why is SKU-1003 not available in CA? Suggest alternatives."
-
+```
 
 **Expected Intent:** `COMPLIANCE_CHECK`  
 **Expected Flow:** `compliance_filter` → return reasons + allowed alternatives  
 **Key Behavior:** Deterministic rule check (THC Beverage blocked in ID/UT, not CA - adjust SKU as needed)
 
 **Curl Command:**
-
+```bash
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d '{
@@ -257,10 +296,10 @@ curl -X POST "http://127.0.0.1:8000/chat" \
        "user_type": "portal_customer",
        "session_id": "walkthrough-demo"
      }'
-
+```
 
 **Expected Response Snippet:**
-json
+```json
 {
   "intent": "COMPLIANCE_CHECK",
   "response": "Product is restricted. Reason: STATE_RESTRICTION. See alternatives in response data.",
@@ -273,7 +312,7 @@ json
     }]
   }
 }
-
+```
 
 **Key Point:** The LLM only explains the decision; the Python rules in `compliance_filter.py` make the actual block decision.
 
@@ -282,16 +321,16 @@ json
 #### 3️⃣ Ops: Stock Check by Warehouse
 
 **Query:**
-
+```
 "How much stock does SKU-1001 have and where?"
-
+```
 
 **Expected Intent:** `OPS_STOCK`  
 **Expected Flow:** `stock_by_warehouse` → return warehouse + qty list  
 **Key Behavior:** Returns all warehouses with inventory for the product
 
 **Curl Command:**
-
+```bash
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d '{
@@ -299,10 +338,10 @@ curl -X POST "http://127.0.0.1:8000/chat" \
        "user_type": "internal_sales",
        "session_id": "walkthrough-demo"
      }'
-
+```
 
 **Expected Response Snippet:**
-json
+```json
 {
   "intent": "OPS_STOCK",
   "response": "Total stock: 706 units. Locations: CA-2, NY-1, TX-1, FL-1",
@@ -315,23 +354,23 @@ json
     "total_qty": 706
   }
 }
-
+```
 
 ---
 
 #### 4️⃣ Vendor Onboarding: Missing Fields Validation
 
 **Query:**
-
+```
 "I'm uploading a product missing Net Wt and no lab report—what do I fix?"
-
+```
 
 **Expected Intent:** `VENDOR_ONBOARDING`  
 **Expected Flow:** `vendor_validate` → return checklist + status  
 **Key Behavior:** Returns FAIL/REVIEW status with specific missing fields
 
 **Curl Command:**
-
+```bash
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d '{
@@ -339,10 +378,10 @@ curl -X POST "http://127.0.0.1:8000/chat" \
        "user_type": "portal_vendor",
        "session_id": "walkthrough-demo"
      }'
-
+```
 
 **Expected Response Snippet:**
-json
+```json
 {
   "intent": "VENDOR_ONBOARDING",
   "response": "Validation FAIL. Required fixes: Provide net_wt_oz, Provide lab_report",
@@ -353,23 +392,23 @@ json
     "fixes": ["Provide net_wt_oz", "Provide lab_report"]
   }
 }
-
+```
 
 ---
 
 #### 5️⃣ Memory Follow-Up: Use Prior Context
 
 **Query:**
-
+```
 "Ok add 2 of the first one to the basket"
-
+```
 
 **Expected Intent:** `GENERAL_KB` or `SALES_RECO` (keyword router behavior)  
 **Expected Flow:** Uses `session_id` to access `last_product_ids` from prior request  
 **Key Behavior:** Session state persists `last_product_ids` for follow-up context
 
 **Curl Command (run AFTER Query #1 with same session_id):**
-
+```bash
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d '{
@@ -377,7 +416,7 @@ curl -X POST "http://127.0.0.1:8000/chat" \
        "user_type": "internal_sales",
        "session_id": "walkthrough-demo"
      }'
-
+```
 
 **Expected Behavior:**
 - Session state retrieves `last_product_ids` from prior SALES_RECO request
@@ -385,16 +424,16 @@ curl -X POST "http://127.0.0.1:8000/chat" \
 - Server logs show same `session_id` and `last_product_ids` accessed
 
 **Server Log to Watch:**
-json
+```json
 {"event":"request_complete","session_id":"walkthrough-demo","intent":"GENERAL_KB"}
-
+```
 
 ---
 
 ### Additional Test Queries (Bonus Coverage)
 
 #### Sales Variations
-
+```bash
 # Low budget filter
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
@@ -404,10 +443,10 @@ curl -X POST "http://127.0.0.1:8000/chat" \
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d '{"query": "Show me your best sellers", "user_type": "internal_sales"}'
-
+```
 
 #### Compliance Variations
-
+```bash
 # Legal check in allowed state
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
@@ -417,19 +456,19 @@ curl -X POST "http://127.0.0.1:8000/chat" \
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d '{"query": "Why is SKU-1031 restricted in CA?", "user_type": "portal_customer"}'
-
+```
 
 #### Security Test (Should Return 403)
-
+```bash
 # portal_customer trying to access vendor_validate
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d '{"query": "I need to upload a vendor product", "user_type": "portal_customer"}'
 # Expected: HTTP 403 Forbidden
-
+```
 
 #### KB Search Variations
-
+```bash
 # Return policy
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
@@ -439,19 +478,19 @@ curl -X POST "http://127.0.0.1:8000/chat" \
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d '{"query": "How does LTL freight shipping work?", "user_type": "portal_customer"}'
-
+```
 
 ---
 
 ### Walkthrough Demo Script (Copy-Paste Ready)
 
-#### Option A: Git  (Linux/Mac/Windows with Git )
+#### Option A: Git Bash (Linux/Mac/Windows with Git Bash)
 
 Save as `demo_commands.sh`:
 
-
-#!/bin/
-# GW Assessment - Live Demo Commands (Git )
+```bash
+#!/bin/bash
+# GW Assessment - Live Demo Commands (NO jq dependency)
 # Run after server is started: uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 
 BASE_URL="http://127.0.0.1:8000"
@@ -464,31 +503,36 @@ echo "======================================"
 echo -e "\n1️⃣  Sales: Hot picks for CA under $5000"
 curl -s -X POST "$BASE_URL/chat" \
      -H "Content-Type: application/json" \
-     -d "{\"query\": \"Give me hot picks for CA under \$5000\", \"user_type\": \"internal_sales\", \"session_id\": \"$SESSION\"}" | jq '.intent, .response'
+     -d "{\"query\": \"Give me hot picks for CA under \$5000\", \"user_type\": \"internal_sales\", \"session_id\": \"$SESSION\"}"
+echo ""
 
 # 2. Compliance Query
 echo -e "\n2️⃣  Compliance: Why SKU-1003 blocked in ID"
 curl -s -X POST "$BASE_URL/chat" \
      -H "Content-Type: application/json" \
-     -d "{\"query\": \"Why is SKU-1003 not available in ID? Suggest alternatives.\", \"user_type\": \"portal_customer\", \"session_id\": \"$SESSION\"}" | jq '.intent, .response'
+     -d "{\"query\": \"Why is SKU-1003 not available in ID? Suggest alternatives.\", \"user_type\": \"portal_customer\", \"session_id\": \"$SESSION\"}"
+echo ""
 
 # 3. Ops Query
 echo -e "\n3️⃣  Ops: Stock for SKU-1001"
 curl -s -X POST "$BASE_URL/chat" \
      -H "Content-Type: application/json" \
-     -d "{\"query\": \"How much stock does SKU-1001 have and where?\", \"user_type\": \"internal_sales\", \"session_id\": \"$SESSION\"}" | jq '.intent, .response'
+     -d "{\"query\": \"How much stock does SKU-1001 have and where?\", \"user_type\": \"internal_sales\", \"session_id\": \"$SESSION\"}"
+echo ""
 
 # 4. Vendor Query
 echo -e "\n4️⃣  Vendor: Missing fields validation"
 curl -s -X POST "$BASE_URL/chat" \
      -H "Content-Type: application/json" \
-     -d "{\"query\": \"I'm uploading a product missing Net Wt and no lab report—what do I fix?\", \"user_type\": \"portal_vendor\", \"session_id\": \"$SESSION\"}" | jq '.intent, .response'
+     -d "{\"query\": \"I'm uploading a product missing Net Wt and no lab report—what do I fix?\", \"user_type\": \"portal_vendor\", \"session_id\": \"$SESSION\"}"
+echo ""
 
 # 5. Memory Follow-Up
 echo -e "\n5️⃣  Memory: Follow-up with prior context"
 curl -s -X POST "$BASE_URL/chat" \
      -H "Content-Type: application/json" \
-     -d "{\"query\": \"Ok add 2 of the first one to the basket\", \"user_type\": \"internal_sales\", \"session_id\": \"$SESSION\"}" | jq '.intent, .response'
+     -d "{\"query\": \"Ok add 2 of the first one to the basket\", \"user_type\": \"internal_sales\", \"session_id\": \"$SESSION\"}"
+echo ""
 
 # Security Test (should return 403)
 echo -e "\n🔐 Security Test: Unauthorized vendor access (portal_customer)"
@@ -497,19 +541,19 @@ curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" -X POST "$BASE_URL/chat" \
      -d "{\"query\": \"I need to upload a vendor product\", \"user_type\": \"portal_customer\"}"
 
 echo -e "\n✅ Demo complete! Check server logs for observability data."
+```
 
-
-**Usage (Git ):**
-
+**Usage (Git Bash):**
+```bash
 chmod +x demo_commands.sh
 ./demo_commands.sh
-
+```
 
 #### Option B: Windows PowerShell
 
 Save as `demo_commands.ps1`:
 
-
+```powershell
 # GW Assessment - Live Demo Commands (PowerShell)
 # Run after server is started: uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 
@@ -577,16 +621,16 @@ try {
 }
 
 Write-Host "`n✅ Demo complete! Check server logs for observability data." -ForegroundColor Cyan
-
+```
 
 **Usage (PowerShell):**
-
+```powershell
 # First, allow script execution (one-time):
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 # Then run:
 .\demo_commands.ps1
-
+```
 
 ---
 
@@ -599,16 +643,16 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 Main chat endpoint for all queries.
 
 **Request:**
-json
+```json
 {
   "query": "Give me hot picks for TX under $50",
   "user_type": "internal_sales",
   "session_id": "optional-session-id"
 }
-
+```
 
 **Response:**
-json
+```json
 {
   "request_id": "uuid-here",
   "intent": "SALES_RECO",
@@ -620,7 +664,7 @@ json
   "session_id": "optional-session-id",
   "user_type": "internal_sales"
 }
-
+```
 
 **User Types:**
 - `internal_sales` - Full access to all tools
@@ -632,12 +676,12 @@ json
 Health check endpoint.
 
 **Response:**
-json
+```json
 {
   "status": "healthy",
   "service": "gw-assessment-poc"
 }
-
+```
 
 #### GET /debug/routes
 
@@ -649,7 +693,7 @@ List all registered routes (development only).
 
 ### Run All Tests
 
-
+```bash
 # Full test suite (31 tests)
 pytest tests/ -v
 
@@ -661,7 +705,7 @@ python tests/test_llm_stub.py
 
 # Compliance verification
 python tests/verify_compliance.py
-
+```
 
 ### Test Coverage
 
@@ -690,12 +734,12 @@ python tests/verify_compliance.py
 
 Tool access is enforced by `user_type` at the orchestrator level:
 
-python
+```python
 # utils/security.py
 def check_tool_permission(user_type: UserType, tool_name: str) -> bool:
     allowed_tools = TOOL_ALLOWLIST.get(user_type, [])
     return tool_name in allowed_tools
-
+```
 
 | Tool | internal_sales | portal_vendor | portal_customer |
 |------|---------------|---------------|-----------------|
@@ -709,20 +753,20 @@ def check_tool_permission(user_type: UserType, tool_name: str) -> bool:
 
 All data is sanitized before any LLM processing:
 
-python
+```python
 # utils/security.py
 def redact_pii(text: str) -> str:
     # Customer names (Retailer 501, etc.)
     text = re.sub(r'\bRetailer \d+\b', '[CUSTOMER_REDACTED]', text)
     # Email, Phone, SSN, Credit Card patterns
     ...
-
+```
 
 ### Audit Logging
 
 Every request is logged with immutable hash verification:
 
-json
+```json
 {
   "request_id": "uuid-here",
   "user_type": "portal_customer",
@@ -732,7 +776,7 @@ json
   "timestamp": 1711425600.123,
   "audit_hash": "abc123..."
 }
-
+```
 
 ---
 
@@ -781,7 +825,7 @@ json
 #### Issue: `ModuleNotFoundError: No module named 'utils'`
 
 **Solution:**
-
+```bash
 # Ensure __init__.py files exist
 touch utils/__init__.py
 touch core/__init__.py
@@ -791,50 +835,63 @@ touch core/chains/__init__.py
 # Or run from project root
 cd /path/to/gw-assessment
 python tests/comprehensive_demo.py
-
+```
 
 #### Issue: `422 Unprocessable Entity`
 
 **Cause:** Sending query parameters instead of JSON body.
 
 **Solution:**
-
+```bash
 # Correct format (JSON body)
 curl -X POST "http://127.0.0.1:8000/chat" \
      -H "Content-Type: application/json" \
      -d "{\"query\": \"test\", \"user_type\": \"internal_sales\"}"
-
+```
 
 #### Issue: `Connection refused`
 
 **Solution:**
-
+```bash
 # Check if server is running
 netstat -ano | findstr :8000
 
 # Restart server
 uvicorn main:app --host 127.0.0.1 --port 8000 --reload
-
+```
 
 #### Issue: Tests fail with import errors
 
 **Solution:**
-
+```bash
 # Clear Python cache
 Get-ChildItem -Recurse -Filter __pycache__ | Remove-Item -Recurse -Force
 
 # Run with PYTHONPATH set
 $env:PYTHONPATH = "."
 pytest tests/ -v
-
+```
 
 #### Issue: PowerShell script execution blocked
 
 **Solution:**
-
+```powershell
 # Run PowerShell as Administrator, then:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
+#### Issue: `run.sh` pip error on Windows Git Bash
+
+**Solution:**
+```bash
+# Convert line endings first
+sed -i 's/\r$//' run.sh
+
+# Or use manual setup:
+source myenv/Scripts/activate
+python -m pip install -r requirements.txt
+python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+```
 
 ---
 
