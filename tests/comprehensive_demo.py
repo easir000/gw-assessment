@@ -10,11 +10,15 @@ Test Categories:
 - KB Intent (2 queries)
 - Security & Permissions (2 queries)
 - Session Memory (2 queries)
+
+Generates: tests/test_results.json
 """
 import httpx
 import json
 import time
+import os
 from typing import List, Dict
+from datetime import datetime
 
 BASE_URL = "http://127.0.0.1:8000"
 
@@ -29,7 +33,7 @@ COMPREHENSIVE_QUERIES: List[Dict] = [
     {
         "id": 1,
         "name": "Sales: Hot picks under budget",
-        "query": "Give me hot picks for TX under $50",
+        "query": "Give me hot picks for CA under $5000",
         "user_type": "internal_sales",
         "expected_intent": "SALES_RECO",
         "expected_status": 200,
@@ -59,12 +63,12 @@ COMPREHENSIVE_QUERIES: List[Dict] = [
     # ========================================================================
     {
         "id": 4,
-        "name": "Compliance: Why blocked in ID",
-        "query": "Why is SKU-1003 not available in ID? Suggest alternatives.",
+        "name": "Compliance: Why blocked in TX",
+        "query": "Why is SKU-1003 not available in TX? Suggest alternatives.",
         "user_type": "portal_customer",
         "expected_intent": "COMPLIANCE_CHECK",
         "expected_status": 200,
-        "description": "Tests compliance check with ID state restrictions (THC Beverage)"
+        "description": "Tests compliance check with TX state restrictions (THC Beverage)"
     },
     {
         "id": 5,
@@ -91,7 +95,7 @@ COMPREHENSIVE_QUERIES: List[Dict] = [
     {
         "id": 7,
         "name": "Vendor: Missing fields validation",
-        "query": "I'm uploading a product missing Net Wt and no lab report—what do I fix?",
+        "query": "I am uploading a product missing Net Wt and no lab report - what do I fix?",
         "user_type": "portal_vendor",
         "expected_intent": "VENDOR_ONBOARDING",
         "expected_status": 200,
@@ -219,6 +223,26 @@ def retry_request(func, max_retries=2, delay=1.0):
                 raise e
 
 
+def save_test_results(results: Dict):
+    """
+    Save test results to tests/test_results.json
+    """
+    # Ensure tests directory exists
+    os.makedirs("tests", exist_ok=True)
+    
+    # Add metadata
+    results["generated_at"] = datetime.now().isoformat()
+    results["total_tests"] = results["passed"] + results["failed"]
+    results["pass_rate"] = f"{results['passed']/results['total_tests']*100:.1f}%"
+    
+    # Save to file
+    output_path = "tests/test_results.json"
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+    
+    print(f"\n📄 Test results saved to: {output_path}")
+
+
 def run_comprehensive_demo():
     """Run all 16 comprehensive test queries."""
     print("\n" + "=" * 80)
@@ -344,11 +368,8 @@ def run_comprehensive_demo():
     
     print("=" * 80 + "\n")
     
-    # Save results to JSON file (for submission evidence)
-    with open("tests/test_results.json", "w") as f:
-        json.dump(results, f, indent=2)
-    
-    print("📄 Test results saved to: tests/test_results.json\n")
+    # Save results to JSON file
+    save_test_results(results)
     
     return results
 
